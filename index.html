@@ -1,0 +1,41 @@
+<!DOCTYPE html><html lang="it"><head><meta charset="utf-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width,initial-scale=1"><link rel="icon" href="/MoTR-ita/favicon.ico"><title>lexsemunito</title><link href="/MoTR-ita/js/chunk-70e262cb.a9432721.js" rel="prefetch"><link href="/MoTR-ita/css/app.b0074cc8.css" rel="preload" as="style"><link href="/MoTR-ita/css/chunk-vendors.fde1dbb5.css" rel="preload" as="style"><link href="/MoTR-ita/js/app.ad2ca4d4.js" rel="preload" as="script"><link href="/MoTR-ita/js/chunk-vendors.663e11e0.js" rel="preload" as="script"><link href="/MoTR-ita/css/chunk-vendors.fde1dbb5.css" rel="stylesheet"><link href="/MoTR-ita/css/app.b0074cc8.css" rel="stylesheet"></head><body><noscript><strong>Questo studio richiede JavaScript. Per favore abilitalo nel browser e ricarica la pagina.</strong></noscript><div id="app"></div><script>(function() {
+        var _originalFetch = window.fetch;
+
+        window.fetch = function(url, options) {
+          // Intervieni solo sulle chiamate di submit a magpie
+          if (
+            options &&
+            options.body &&
+            typeof options.body === 'string' &&
+            typeof url === 'string' &&
+            url.indexOf('/api/submit_experiment/') !== -1
+          ) {
+            try {
+              var data = JSON.parse(options.body);
+
+              // Il payload è un array di oggetti (una riga per campione)
+              if (Array.isArray(data)) {
+                var cleaned = data.map(function(row) {
+                  if (row === null || typeof row !== 'object') return row;
+                  var cleanRow = {};
+                  Object.keys(row).forEach(function(key) {
+                    var val = row[key];
+                    // Converte null e undefined in stringa vuota
+                    cleanRow[key] = (val === null || val === undefined) ? '' : val;
+                  });
+                  return cleanRow;
+                });
+
+                options = Object.assign({}, options, {
+                  body: JSON.stringify(cleaned)
+                });
+              }
+            } catch (e) {
+              // Se il parsing fallisce, invia il payload originale senza modifiche
+              console.warn('[fetch intercept] Impossibile parsare il body:', e);
+            }
+          }
+
+          return _originalFetch.apply(this, arguments);
+        };
+      })();</script><script src="/MoTR-ita/js/chunk-vendors.663e11e0.js"></script><script src="/MoTR-ita/js/app.ad2ca4d4.js"></script></body></html>
